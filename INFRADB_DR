@@ -106,3 +106,25 @@ RUN {
     DORECOVER
     NOFILENAMECHECK;
 }
+
+
+Step 3: Prevent Future FRA Exhaustion (Crucial Maintenance)
+Because DB_RECOVERY_FILE_DEST_SIZE is now set to 350G and multiple logs are being stored in ASM +DATA, set up an automated RMAN deletion job so applied logs are purged before the FRA fills up again.
+
+Check current FRA usage:
+
+SELECT NAME, 
+       ROUND(SPACE_LIMIT/1024/1024/1024, 2) AS LIMIT_GB,
+       ROUND(SPACE_USED/1024/1024/1024, 2) AS USED_GB,
+       ROUND(SPACE_RECLAIMABLE/1024/1024/1024, 2) AS RECLAIMABLE_GB,
+       ROUND((SPACE_USED - SPACE_RECLAIMABLE)/SPACE_LIMIT * 100, 2) AS PCT_USED
+FROM V$RECOVERY_FILE_DEST;
+
+Once the database is fully caught up, schedule an hourly or daily crontab script on the standby to delete applied logs:
+
+rman target / << 'EOF'
+DELETE NOPROMPT ARCHIVELOG ALL COMPLETED BEFORE 'SYSDATE-1';
+EXIT;
+EOF
+
+Run SELECT * FROM V$ARCHIVE_GAP; to confirm how many sequences remain.
