@@ -128,3 +128,10 @@ EXIT;
 EOF
 
 Run SELECT * FROM V$ARCHIVE_GAP; to confirm how many sequences remain.
+
+su - oracle
+export ORACLE_SID=INFRADB
+export ORACLE_HOME=/oracle/app/oracle/database/19.3.0/dbhome_1
+export PATH=$ORACLE_HOME/bin:$PATH
+
+sqlplus / as sysdba
