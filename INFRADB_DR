@@ -135,3 +135,26 @@ export ORACLE_HOME=/oracle/app/oracle/database/19.3.0/dbhome_1
 export PATH=$ORACLE_HOME/bin:$PATH
 
 sqlplus / as sysdba
+
+Verify Fast Recovery Area (FRA) & ASM Disk Space:
+
+SELECT NAME, ROUND(SPACE_LIMIT/1024/1024/1024, 2) AS LIMIT_GB,
+       ROUND(SPACE_USED/1024/1024/1024, 2) AS USED_GB,
+       ROUND((SPACE_USED - SPACE_RECLAIMABLE)/SPACE_LIMIT * 100, 2) AS NET_PCT_USED
+FROM V$RECOVERY_FILE_DEST;
+
+uccess Criteria: FRA usage on both DC and DR $< 65\%$.
+
+
+
+To Enable broker process on DR:
+
+
+
+SQL
+-- On PRODCDB_DR (both nodes):
+ALTER SYSTEM SET dg_broker_start=TRUE SCOPE=BOTH SID='*';
+
+-- On INFRADB_DR:
+ALTER SYSTEM SET dg_broker_start=TRUE SCOPE=BOTH;
+
